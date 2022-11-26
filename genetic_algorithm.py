@@ -1,9 +1,8 @@
-import functools
 import itertools
-import operator
+import os
 import random
-
 import numpy as np
+from utilities import *
 
 
 def initial_population(img_shape: tuple, n_individuals: int = 8):
@@ -36,31 +35,31 @@ def initial_population(img_shape: tuple, n_individuals: int = 8):
     return init_population
 
 
-def population_fitness(population: np.ndarray, target: np.ndarray):
+def population_fitness(population: np.ndarray, target_chromosome: np.ndarray):
     """
     :param population: array of shape (N,L) where N:number of individuals and L is the chromosome length
-    :param target: the target chromosome to compare the population against
+    :param target_chromosome: the target chromosome to compare the population against
     :return: a numpy array containing the fitness of each individual
     """
     fit = np.zeros(population.shape[0])
     for i in range(population.shape[0]):
-        fit[i] = fitness(target, population[i])
+        fit[i] = fitness(target_chromosome, population[i])
     return fit
 
 
-def fitness(target: np.ndarray, chrom: np.ndarray):
+def fitness(target_chromosome: np.ndarray, chrom: np.ndarray):
     """
-    :param target: the target chromosome to compare the population against
+    :param target_chromosome: the target chromosome to compare the population against
     :param chrom: the individual
     :return: (a number between 0 and 255) the fitness of the passed individual
     """
-    quality = np.mean(np.abs(target - chrom))
-    quality = np.mean(target) - quality
+    quality = np.mean(np.abs(target_chromosome - chrom))
+    quality = np.mean(target_chromosome) - quality
     return quality
 
 
 def selection(population, adaptation, n_parent):
-    selected_parents = np.empty(shape=(n_parent, population.shape[1]))
+    selected_parents = np.empty(shape=(n_parent, population.shape[1]), dtype=np.uint8)
     for i in range(n_parent):
         index = np.where(adaptation == np.max(adaptation))[0][0]
         selected_parents[i] = population[index]
@@ -70,10 +69,9 @@ def selection(population, adaptation, n_parent):
 
 def crossover(parents: np.ndarray, n_individuals=8):
     """
-    
     :param parents:
     :param n_individuals:
-    :return:
+    :return: population after crossover
     """
     population = np.empty(shape=(n_individuals, parents.shape[1]))
     population[:parents.shape[0]] = parents
@@ -93,11 +91,41 @@ def crossover(parents: np.ndarray, n_individuals=8):
     return population
 
 
-def mutation(population, n_parents, mutation_probability):
+def mutation(population: np.ndarray, n_parents: int, mutation_probability: float, n_genes: int) -> None:
+
+    """
+    :param population:current population
+    :param n_parents:number of previously selected parents
+    :param mutation_probability:probability of mutation
+    :param n_genes:number of mutated genes for every successful mutation
+    :return:
+    """
     for i in range(n_parents, population.shape[0]):
         r = random.random()
         offspring = population[i]
         if r < mutation_probability:
-            position = random.randint(0, population.shape[1] - 1)
-            offspring[position] = random.randint(0, 256)
+            for _ in range(n_genes):
+                position = random.randint(0, population.shape[1] - 1)
+                offspring[position] = random.randint(0, 256)
 
+
+def ga(target_img, population_size, selection_size, target_fitness):
+    target_chromosome = chromosome(target_img)
+    population = initial_population(target_img.shape, population_size)
+    fit = population_fitness(population, target_chromosome)
+    n_iterations = 0
+    while np.max(fit) < target_fitness:
+        parents = selection(population, fit, selection_size)
+        population = crossover(parents, population_size)
+        mutation(population, selection_size, 0.3, 3)
+        fit = population_fitness(population, target_chromosome)
+        n_iterations += 1
+    print(n_iterations)
+    best = selection(population, population_fitness(population, target_chromosome), 1)
+    return image(best[0], target_img.shape)
+
+
+if __name__ == '__main__':
+    target = load_image(os.path.dirname(os.path.abspath(__file__))+'\\steve.jpg')
+    generated_image = ga(target, 25, 5, 95)
+    show(target, generated_image)

@@ -15,9 +15,15 @@ def image(chrom, shape):
     return numpy.reshape(a=chrom, newshape=shape)
 
 
-def show(img: numpy.ndarray):
-    plt.imshow(img)
+def show(target: numpy.ndarray, generated: numpy.ndarray):
+    plt.subplot(1, 2, 1)
+    plt.imshow(target)
+    plt.subplot(1, 2, 2)
+    plt.imshow(generated)
     plt.show()
+    plt.pause(1)
+    plt.close('all')
+
 
 
 def load_image(filename):
@@ -25,4 +31,4 @@ def load_image(filename):
 
 
 def save(img):
-    iio.imwrite('image.jpeg', img,extension=".jpeg")
+    iio.imwrite('image.jpeg', img, extension=".jpeg")
