@@ -21,9 +21,6 @@ def show(target: numpy.ndarray, generated: numpy.ndarray):
     plt.subplot(1, 2, 2)
     plt.imshow(generated)
     plt.show()
-    plt.pause(1)
-    plt.close('all')
-
 
 
 def load_image(filename):

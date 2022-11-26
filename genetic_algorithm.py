@@ -14,16 +14,6 @@ def initial_population(img_shape: tuple, n_individuals: int = 8):
     :return: numpy array of length n_individuals
     """
 
-    """x=1
-    write this then replace it
-    for i in img_shape:
-        x*=i
-    print(x)
-    init_population = numpy.empty(shape=(n_individuals,
-                                         x),
-                                  dtype=numpy.uint8)
-    print(init_population)
-    """
     length = functools.reduce(operator.mul, img_shape)
     init_population = np.empty(shape=(n_individuals,
                                       length),
@@ -80,10 +70,6 @@ def crossover(parents: np.ndarray, n_individuals=8):
     selected_permutations = random.sample(range(len(parents_permutations)), offspring_number)
     for i in range(offspring_number):
         parent1 = parents[parents_permutations[selected_permutations[i]][0]]
-        #                                    selected_permutations[0]
-        #               parents_permutations[             4          ]
-        #                            (1,2)                            [0]
-        #       parents[                   1                             ]
         parent2 = parents[parents_permutations[selected_permutations[i]][1]]
         point = np.int32(population.shape[1] / 2)
         population[parents.shape[0] + i, 0:point] = parent1[0:point]
